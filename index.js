@@ -27,6 +27,9 @@ app.use(bodyParser.json());
 const todoRoutes = require("./routes/todoRoutes");
 app.use("/api/todos", todoRoutes);
 
+const userRoutes = require("./routes/userRoutes");
+app.use("/api/auth", userRoutes);
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
