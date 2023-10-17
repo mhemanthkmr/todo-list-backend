@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
-const bcrypt = require("../node_modules/bcryptjs");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
+//Get User Todo List
+
 // Sign up
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
@@ -29,22 +31,21 @@ router.post("/signup", async (req, res) => {
       email,
       password: bcrypt.hashSync(password, 10),
     });
-    user.save();
-    res.status(201).json(user);
+    const token = user.generateAuthToken();
+    res.header("x-auth-token", token).status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.get("/:id", async (req, res) => {
-  try {
-    // const users = await User.find();
-    const user = await User.findById(req.params.id);
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Error retrieving users", error });
-  }
-});
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     res.status(200).json(user);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error retrieving users", error });
+//   }
+// });
 
 // Sign in
 router.post("/signin", async (req, res) => {
@@ -61,9 +62,7 @@ router.post("/signin", async (req, res) => {
     if (!passwordMatch)
       return res.status(400).json({ error: "Password is incorrect." });
     // Create and assign a token
-    const token = jwt.sign({ _id: user._id }, "secretkey", {
-      expiresIn: 86400, // 24 hours
-    });
+    const token = user.generateAuthToken();
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ error: error.message });
