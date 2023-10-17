@@ -10,7 +10,7 @@ const port = 5000; // You can change this port if needed
 mongoose.connect(
   "mongodb://mhemanthkmr:Hemanth123$@mongodb.selfmade.ninja:27017/users",
   {
-    dbName: "mhemanthkmr_Test",
+    dbName: "mhemanthkmr_users",
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }
@@ -19,8 +19,13 @@ mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
+//Cors Options
+const corsOptions = {
+  exposedHeaders: "x-auth-token",
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // Routes
