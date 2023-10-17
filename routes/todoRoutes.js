@@ -1,9 +1,31 @@
 const express = require("express");
 const router = express.Router();
 const Todo = require("../models/todoModel");
+const auth = require("../middleware/auth");
+const User = require("../models/userModel");
+
+//User Me
+router.get("/me", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving user", error });
+  }
+});
+
+//Get User Todos
+router.get("/me/todos", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("todos");
+    res.status(200).json(user.todos);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving todos", error });
+  }
+});
 
 // Get all todos
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const todos = await Todo.find();
     res.json(todos);
@@ -13,14 +35,16 @@ router.get("/", async (req, res) => {
 });
 
 // Add a new todo
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const todoData = req.body;
-
   try {
-    const newTodo = await Todo.create(todoData);
-    res.json(newTodo);
+    const todo = await Todo.create(todoData);
+    const user = await User.findById(req.user._id);
+    user.todos.push(todo);
+    await user.save();
+    res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error creating todo", error });
+    res.status(400).json({ message: "Error creating todo", error });
   }
 });
 
